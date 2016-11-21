@@ -13,6 +13,7 @@ public class MemoryManger implements Runnable{
 	 */
 	// the number of threads that have finished. Exit when this equals finalSize
 	public static Integer finishedQueue;
+	public static Object QueueLock;
 	//Frame Table where the index corresponds to frame
 	public static MemoryItem[] frameTable;
 	//Final Size of the Finished Queue
@@ -31,7 +32,10 @@ public class MemoryManger implements Runnable{
 		while (finishedQueue < finalSize) {
 			if (!memoryQueue.isEmpty()) {
 				//pop Item on Queue
-				MemoryItem neededAddr=memoryQueue.removeFirst();
+				MemoryItem neededAddr;
+				synchronized (QueueLock) {
+					neededAddr=memoryQueue.removeFirst();
+				}
 				boolean found=false;
 				//Not going for best complexity 
 				for(int i=0; i<frameTable.length;i++) {
@@ -77,8 +81,10 @@ public class MemoryManger implements Runnable{
 	/*
 	 * Adds an Item to the Queue of items 
 	 */
-	public static synchronized void addToQueue(MemoryItem m) {
+	public static void addToQueue(MemoryItem m) {
+		synchronized (QueueLock) {
 		memoryQueue.add(m);
+		}
 	}
 	
 	public static synchronized void messageFinished() {
