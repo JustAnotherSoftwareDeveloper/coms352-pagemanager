@@ -1,4 +1,6 @@
 import java.util.LinkedList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 /**
  * 
  * @author michael
@@ -7,7 +9,7 @@ import java.util.LinkedList;
 public class MemoryManger implements Runnable{
 
 	/*
-	 * Using Static Variables. I know thisra isn't the best practice,
+	 * Using Static Variables. I know this isn't the best practice,
 	 * but it makes everything easier and I need all the help I can get.
 	 * plus I'd use shared memory if I were doing this in C
 	 */
@@ -24,12 +26,16 @@ public class MemoryManger implements Runnable{
 	public static Integer pageSize;
 	//Max Pages Per Process
 	public static Integer maxPages;
+	
+	private static final Logger log=Logger.getLogger(MemoryManger.class.getName());
 	@Override
 	public void run() {
 		/*this is basically gonna run in the background for as long as there
 		* are threads still reading from their files
 		*/
-		while (finishedQueue < finalSize) {
+		while (finishedQueue < finalSize || !memoryQueue.isEmpty() ) {
+			//For some reason java will not detect changes on this thread unless I put this here
+			log.log(Level.FINEST,"");
 			if (!memoryQueue.isEmpty()) {
 				//pop Item on Queue
 				MemoryItem neededAddr;
@@ -43,7 +49,7 @@ public class MemoryManger implements Runnable{
 						if (frameTable[i].getProcessNum().equals(neededAddr.getProcessNum()) && frameTable[i].getPageNum().equals(neededAddr.getPageNum()) ){
 							frameTable[i]=neededAddr; //Might as well swap them
 							found=true;
-							System.out.println(neededAddr.getProcessNum()+
+							System.out.println("Process "+neededAddr.getProcessNum()+
 									" access address "
 									+neededAddr.gettAddr()+
 									"(page number = "+
@@ -61,7 +67,7 @@ public class MemoryManger implements Runnable{
 						System.out.println("Invalid Address for Process "+neededAddr.getProcessNum());
 					}
 					else {
-						System.out.println(neededAddr.getProcessNum()+
+						System.out.println("Process "+neededAddr.getProcessNum()+
 								" access address "
 								+neededAddr.gettAddr()+
 								"(page number = "+
@@ -72,10 +78,22 @@ public class MemoryManger implements Runnable{
 							PageFaultHandler.faultQueue.add(neededAddr);
 						}
 					}
+					/*
+					 * Sleeping Thread. Otherwise the page fault handler doesn't have time to really work and 
+					 * page faults are registered multiple times when they really should register once. 
+					 */
+					try {
+						Thread.sleep(2000);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				}
+				
 			}
-			PageFaultHandler.finished=true;
+		
 		}
+		PageFaultHandler.finished=true;
 		
 	}
 	/*
@@ -83,7 +101,7 @@ public class MemoryManger implements Runnable{
 	 */
 	public static void addToQueue(MemoryItem m) {
 		synchronized (QueueLock) {
-		memoryQueue.add(m);
+		 	memoryQueue.add(m);
 		}
 	}
 	
