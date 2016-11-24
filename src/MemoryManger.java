@@ -1,4 +1,5 @@
 import java.util.LinkedList;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 /**
@@ -22,6 +23,7 @@ public class MemoryManger implements Runnable{
 	public static Integer finalSize;
 	//Queue of Items to be referenced 
 	public static LinkedList<MemoryItem> memoryQueue;
+	public static Set<MemoryItem> finishedSet;
 	//Page Size
 	public static Integer pageSize;
 	//Max Pages Per Process
@@ -83,12 +85,17 @@ public class MemoryManger implements Runnable{
 					 * page faults are registered multiple times when they really should register once. 
 					 */
 					try {
-						Thread.sleep(2000);
+						Thread.sleep(990);
 					} catch (InterruptedException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 				}
+				/*
+				 * Adds Memory Item to the finished set. This is used
+				 * to check if a process is finished or not
+				 */
+				MemoryManger.finishedSet.add(neededAddr);
 				
 			}
 		

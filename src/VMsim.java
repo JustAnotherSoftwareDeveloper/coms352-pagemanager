@@ -1,3 +1,4 @@
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -28,6 +29,7 @@ public class VMsim {
 		MemoryManger.pageSize=pageSize;
 		MemoryManger.maxPages=maxPages;
 		MemoryManger.QueueLock=new Object();
+		MemoryManger.finishedSet=new HashSet<>();
 		PageFaultHandler.finished=false;
 		PageFaultHandler.faultQueue=new LinkedList<>();
 		PageFaultHandler.QueueLock=new Object();

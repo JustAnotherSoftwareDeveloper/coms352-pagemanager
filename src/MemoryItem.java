@@ -40,6 +40,14 @@ public class MemoryItem {
 	public LocalDateTime getLastUsed() {
 		return this.lastUsed;
 	}
+	/**
+	 * Equals Method. Used for the containsAll() in FileReader
+	 */
+	@Override
+	public boolean equals(Object o) {
+		MemoryItem m= (MemoryItem) o;
+		return (m.getProcessNum()==this.getProcessNum() && m.gettAddr() == this.gettAddr());
+	}
 	
 	
 	
