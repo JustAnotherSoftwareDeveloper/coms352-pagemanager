@@ -19,7 +19,7 @@ public class MemoryItem {
 		this.offset=offset;
 	}
 	
-	public synchronized void updateLRUTime() {
+	public void updateLRUTime() {
 		lastUsed=LocalDateTime.now();
 		
 	}
@@ -31,7 +31,7 @@ public class MemoryItem {
 		return this.pageNum;
 	}
 	public Integer gettAddr() {
-		return MemoryManger.pageSize*this.pageNum+offset;
+		return MemoryManager.pageSize*this.pageNum+offset;
 	}
 	public Integer getOffset() {
 		return this.offset;

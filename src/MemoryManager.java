@@ -7,7 +7,7 @@ import java.util.logging.Logger;
  * @author michael
  * Class that will manage the memory frames.
  */
-public class MemoryManger implements Runnable{
+public class MemoryManager implements Runnable{
 
 	/*
 	 * Using Static Variables. I know this isn't the best practice,
@@ -29,7 +29,7 @@ public class MemoryManger implements Runnable{
 	//Max Pages Per Process
 	public static Integer maxPages;
 	
-	private static final Logger log=Logger.getLogger(MemoryManger.class.getName());
+	private static final Logger log=Logger.getLogger(MemoryManager.class.getName());
 	@Override
 	public void run() {
 		/*this is basically gonna run in the background for as long as there
@@ -43,6 +43,7 @@ public class MemoryManger implements Runnable{
 				MemoryItem neededAddr;
 				synchronized (QueueLock) {
 					neededAddr=memoryQueue.removeFirst();
+					
 				}
 				boolean found=false;
 				//Not going for best complexity 
@@ -50,9 +51,10 @@ public class MemoryManger implements Runnable{
 					if (frameTable[i]!=null) { //nesting if statements for readability
 						if (frameTable[i].getProcessNum().equals(neededAddr.getProcessNum()) && frameTable[i].getPageNum().equals(neededAddr.getPageNum()) ){
 							frameTable[i]=neededAddr; //Might as well swap them
+		
 							found=true;
-							System.out.println("Process "+neededAddr.getProcessNum()+
-									" access address "
+							System.out.println("[Process "+neededAddr.getProcessNum()+
+									"] access address "
 									+neededAddr.gettAddr()+
 									"(page number = "+
 										neededAddr.getPageNum()+
@@ -60,17 +62,18 @@ public class MemoryManger implements Runnable{
 										") in main memory (frame number =  "+
 										i+
 										").");
+
 						}
 						
 					}
 				}
 				if (!found) {
 					if (neededAddr.getPageNum()>=maxPages || neededAddr.getOffset() >= pageSize) {
-						System.out.println("Invalid Address for Process "+neededAddr.getProcessNum());
+						System.out.println("Invalid Address for [Process "+neededAddr.getProcessNum()+"] ("+neededAddr.gettAddr()+") and so user process terminates");
 					}
 					else {
-						System.out.println("Process "+neededAddr.getProcessNum()+
-								" access address "
+						System.out.println("[Process "+neededAddr.getProcessNum()+
+								"] access address "
 								+neededAddr.gettAddr()+
 								"(page number = "+
 									neededAddr.getPageNum()+
@@ -84,18 +87,20 @@ public class MemoryManger implements Runnable{
 					 * Sleeping Thread. Otherwise the page fault handler doesn't have time to really work and 
 					 * page faults are registered multiple times when they really should register once. 
 					 */
+					
 					try {
-						Thread.sleep(990);
+						Thread.sleep(1100);
 					} catch (InterruptedException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
+					neededAddr.updateLRUTime();
 				}
 				/*
 				 * Adds Memory Item to the finished set. This is used
 				 * to check if a process is finished or not
 				 */
-				MemoryManger.finishedSet.add(neededAddr);
+				MemoryManager.finishedSet.add(neededAddr);
 				
 			}
 		

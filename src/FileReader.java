@@ -26,11 +26,19 @@ public class FileReader implements Runnable {
 		while (reader.hasNextInt()) {
 			Integer memNumber=reader.nextInt();
 			//Create MemoryItem Object
-			Integer pageNum=memNumber/MemoryManger.pageSize;
-			Integer offset=memNumber % MemoryManger.pageSize;
-			MemoryItem request=new MemoryItem(filenum,pageNum,offset);
-			MemoryManger.addToQueue(request);
+			Integer pageNum=memNumber/MemoryManager.pageSize;
+			Integer offset=memNumber % MemoryManager.pageSize;
+			MemoryItem request=new MemoryItem(filenum-1,pageNum,offset);
+			MemoryManager.addToQueue(request);
 			this.requests.add(request);
+			/*
+			 * If Request is invalid then no more memory items will be read.
+			 */
+			if (pageNum>=MemoryManager.maxPages || offset >= MemoryManager.pageSize) {
+				reader.close();
+				MemoryManager.messageFinished();
+				return;
+			}
 			try {
 				Thread.sleep(100);
 			} catch (InterruptedException e) {
@@ -39,12 +47,12 @@ public class FileReader implements Runnable {
 			}
 		}
 		reader.close();
-		while (!MemoryManger.finishedSet.containsAll(requests)) {
+		while (!MemoryManager.finishedSet.containsAll(requests)) {
 			log.log(Level.FINEST, "");
 			
 		}
-		MemoryManger.messageFinished();
-		System.out.println("Process "+filenum+" finished");
+		MemoryManager.messageFinished();
+		System.out.println("[Process "+(filenum-1)+"] ends");
 		
 	}
 
